@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -31,6 +30,7 @@ const Products = () => {
 
   useEffect(() => {
     fetchCategories();
+    fetchProducts();
   }, []);
 
   useEffect(() => {
@@ -41,8 +41,9 @@ const Products = () => {
   }, [location.search]);
 
   useEffect(() => {
+    // Only fetch products when sort or page changes
     fetchProducts();
-  }, [filters, sortOrder, currentPage]);
+  }, [sortOrder, currentPage]);
 
   const fetchCategories = async () => {
     try {
@@ -162,11 +163,16 @@ const Products = () => {
   };
 
   const handleFilterChange = (newFilters: any) => {
-    setCurrentPage(1); // Reset to first page when filters change
+    // Only update the filters state, don't fetch products yet
     setFilters(prevFilters => ({
       ...prevFilters,
       ...newFilters
     }));
+  };
+
+  const handleApplyFilters = () => {
+    setCurrentPage(1); // Reset to first page when filters are applied
+    fetchProducts(); // Fetch products with new filters
   };
 
   const handleSortChange = (value: string) => {
@@ -188,6 +194,7 @@ const Products = () => {
           <ProductFilters 
             categories={categories} 
             onFilterChange={handleFilterChange}
+            onApplyFilters={handleApplyFilters}
             currentFilters={filters}
           />
           <div className="mt-4 md:mt-0">
@@ -222,7 +229,7 @@ const Products = () => {
                     price: product.price,
                     image: product.image_url || "/placeholder.svg",
                     slug: product.id,
-                    averageRating: 4.5 // This would come from a real ratings system
+                    averageRating: 4.5
                   }}
                 />
               ))}
