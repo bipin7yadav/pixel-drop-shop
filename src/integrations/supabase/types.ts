@@ -9,8 +9,33 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      categories: {
+        Row: {
+          created_at: string | null
+          id: string
+          image_url: string | null
+          name: string
+          slug: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          image_url?: string | null
+          name: string
+          slug?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          image_url?: string | null
+          name?: string
+          slug?: string | null
+        }
+        Relationships: []
+      }
       products: {
         Row: {
+          category_id: string | null
           created_at: string | null
           description: string | null
           id: string
@@ -21,6 +46,7 @@ export type Database = {
           stock_quantity: number | null
         }
         Insert: {
+          category_id?: string | null
           created_at?: string | null
           description?: string | null
           id?: string
@@ -31,6 +57,7 @@ export type Database = {
           stock_quantity?: number | null
         }
         Update: {
+          category_id?: string | null
           created_at?: string | null
           description?: string | null
           id?: string
@@ -41,6 +68,13 @@ export type Database = {
           stock_quantity?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "products_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "products_seller_id_fkey"
             columns: ["seller_id"]
