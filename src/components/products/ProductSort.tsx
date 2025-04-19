@@ -61,7 +61,7 @@ const ProductSort = ({ onSortChange }: ProductSortProps) => {
               <CommandItem
                 key={option.value}
                 value={option.value}
-                onSelect={handleSelect}
+                onSelect={() => handleSelect(option.value)}
               >
                 <Check
                   className={`mr-2 h-4 w-4 ${value === option.value ? "opacity-100" : "opacity-0"}`}
