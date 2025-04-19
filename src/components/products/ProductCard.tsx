@@ -1,8 +1,10 @@
 import { Link } from "react-router-dom";
-import { ShoppingCart } from "lucide-react";
+import { ShoppingCart, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/contexts/CartContext";
+import { useWishlist } from "@/contexts/WishlistContext";
 import { Database } from "@/integrations/supabase/types";
+import { toast } from "sonner";
 
 type Product = Database['public']['Tables']['products']['Row'];
 
@@ -19,16 +21,41 @@ interface ProductCardProps {
 const ProductCard = ({ product }: ProductCardProps) => {
   const { id, name, price, image_url, average_rating } = product;
   const { addItem } = useCart();
+  const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     addItem({
-      id,
+      id: parseInt(id),
       name,
       price,
       image: image_url || "/placeholder.svg"
     });
+  };
+
+  const handleWishlistToggle = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    try {
+      if (isInWishlist(id)) {
+        await removeFromWishlist(id);
+        toast.success('Removed from wishlist');
+      } else {
+        await addToWishlist({
+          id,
+          name,
+          price,
+          image: image_url || "/placeholder.svg",
+          slug: id
+        });
+        toast.success('Added to wishlist');
+      }
+    } catch (error) {
+      console.error('Error toggling wishlist:', error);
+      toast.error('Failed to update wishlist');
+    }
   };
 
   return (
@@ -39,13 +66,24 @@ const ProductCard = ({ product }: ProductCardProps) => {
           alt={name}
           className="product-image"
         />
-        <Button
-          size="icon"
-          className="absolute bottom-2 right-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity bg-white text-brand-teal hover:bg-brand-teal hover:text-white"
-          onClick={handleAddToCart}
-        >
-          <ShoppingCart className="h-[1.2rem] w-[1.2rem]" />
-        </Button>
+        <div className="absolute bottom-2 right-2 flex gap-2">
+          <Button
+            size="icon"
+            className="rounded-full opacity-0 group-hover:opacity-100 transition-opacity bg-white text-brand-teal hover:bg-brand-teal hover:text-white"
+            onClick={handleWishlistToggle}
+          >
+            <Heart 
+              className={`h-[1.2rem] w-[1.2rem] ${isInWishlist(id) ? 'fill-red-500 text-red-500' : ''}`}
+            />
+          </Button>
+          <Button
+            size="icon"
+            className="rounded-full opacity-0 group-hover:opacity-100 transition-opacity bg-white text-brand-teal hover:bg-brand-teal hover:text-white"
+            onClick={handleAddToCart}
+          >
+            <ShoppingCart className="h-[1.2rem] w-[1.2rem]" />
+          </Button>
+        </div>
       </div>
       <div className="p-4">
         <h3 className="font-medium text-gray-800 mb-1 line-clamp-1">{name}</h3>

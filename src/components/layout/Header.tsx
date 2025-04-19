@@ -1,15 +1,17 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { ShoppingCart, User, Menu, X, Search } from "lucide-react";
+import { ShoppingCart, User, Menu, X, Search, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCart } from "@/contexts/CartContext";
+import { useWishlist } from "@/contexts/WishlistContext";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const { itemCount } = useCart();
+  const { wishlist } = useWishlist();
   
   // These would come from auth context in a real implementation
   const isLoggedIn = false;
@@ -50,7 +52,7 @@ const Header = () => {
             </Link>
           </nav>
 
-          {/* Search and Cart */}
+          {/* Search, Wishlist and Cart */}
           <div className="flex items-center space-x-4">
             <Button
               variant="ghost"
@@ -60,6 +62,20 @@ const Header = () => {
             >
               <Search className="w-5 h-5" />
             </Button>
+            <Link to="/wishlist" className="relative">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-gray-700 hover:text-brand-teal"
+              >
+                <Heart className="w-5 h-5" />
+                {wishlist.length > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-brand-teal text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                    {wishlist.length}
+                  </span>
+                )}
+              </Button>
+            </Link>
             <Link to="/cart" className="relative">
               <Button
                 variant="ghost"
@@ -118,6 +134,17 @@ const Header = () => {
               >
                 Sale
               </Link>
+              <div className="flex items-center justify-between py-2">
+                <Link to="/wishlist" className="relative flex items-center">
+                  <Heart className="w-5 h-5 mr-2 text-gray-700" />
+                  <span>Wishlist</span>
+                  {wishlist.length > 0 && (
+                    <span className="ml-2 bg-brand-teal text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                      {wishlist.length}
+                    </span>
+                  )}
+                </Link>
+              </div>
               <div className="flex items-center justify-between py-2">
                 <Link to="/cart" className="relative flex items-center">
                   <ShoppingCart className="w-5 h-5 mr-2 text-gray-700" />
