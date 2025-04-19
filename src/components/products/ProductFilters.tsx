@@ -3,10 +3,18 @@ import { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
+import { Database } from '@/integrations/supabase/types';
+
+type Category = Database['public']['Tables']['categories']['Row'];
 
 interface ProductFiltersProps {
-  categories: any[];
-  onFilterChange: (filters: any) => void;
+  categories: Category[];
+  onFilterChange: (filters: {
+    category: string;
+    minPrice: number;
+    maxPrice: number;
+    search: string;
+  }) => void;
   currentFilters: {
     category: string;
     minPrice: number;
@@ -23,13 +31,12 @@ const ProductFilters: React.FC<ProductFiltersProps> = ({
   const [localFilters, setLocalFilters] = useState(currentFilters);
 
   useEffect(() => {
-    // Debounce filter changes to reduce unnecessary API calls
     const timeoutId = setTimeout(() => {
       onFilterChange(localFilters);
     }, 300);
 
     return () => clearTimeout(timeoutId);
-  }, [localFilters]);
+  }, [localFilters, onFilterChange]);
 
   const handleCategoryChange = (value: string) => {
     setLocalFilters(prev => ({
@@ -54,7 +61,7 @@ const ProductFilters: React.FC<ProductFiltersProps> = ({
   };
 
   return (
-    <div className="mb-6 flex flex-wrap gap-4 items-center">
+    <div className="mb-6 space-y-4 md:space-y-0 md:flex md:flex-wrap md:gap-4 md:items-center">
       <Input 
         placeholder="Search products..." 
         className="w-full md:w-64"
@@ -72,7 +79,7 @@ const ProductFilters: React.FC<ProductFiltersProps> = ({
         <SelectContent>
           <SelectItem value="">All Categories</SelectItem>
           {categories.map(category => (
-            <SelectItem key={category.id} value={category.name}>
+            <SelectItem key={category.id} value={category.id}>
               {category.name}
             </SelectItem>
           ))}

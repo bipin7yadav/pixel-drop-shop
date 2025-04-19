@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import ProductCard from '@/components/products/ProductCard';
 import ProductFilters from '@/components/products/ProductFilters';
 import Layout from '@/components/layout/Layout';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const Products = () => {
   const [products, setProducts] = useState<any[]>([]);
@@ -27,35 +28,54 @@ const Products = () => {
   const fetchCategories = async () => {
     const { data, error } = await supabase
       .from('categories')
-      .select('*');
+      .select('*')
+      .order('name');
+
+    if (error) {
+      console.error('Error fetching categories:', error);
+      return;
+    }
 
     if (data) setCategories(data);
-    if (error) console.error('Error fetching categories:', error);
   };
 
   const fetchProducts = async () => {
     setLoading(true);
     let query = supabase
       .from('products')
-      .select('*, categories(name)');
+      .select(`
+        *,
+        categories (
+          id,
+          name,
+          slug
+        )
+      `);
 
-    // Apply category filter
     if (filters.category) {
-      query = query.eq('categories.name', filters.category);
+      query = query.eq('category_id', filters.category);
     }
 
-    // Apply price range filter
-    query = query.gte('price', filters.minPrice).lte('price', filters.maxPrice);
+    if (filters.minPrice !== undefined) {
+      query = query.gte('price', filters.minPrice);
+    }
 
-    // Apply search filter
+    if (filters.maxPrice !== undefined) {
+      query = query.lte('price', filters.maxPrice);
+    }
+
     if (filters.search) {
       query = query.or(`name.ilike.%${filters.search}%,description.ilike.%${filters.search}%`);
     }
 
     const { data, error } = await query;
 
-    if (data) setProducts(data);
-    if (error) console.error('Error fetching products:', error);
+    if (error) {
+      console.error('Error fetching products:', error);
+      return;
+    }
+
+    setProducts(data || []);
     setLoading(false);
   };
 
@@ -78,8 +98,14 @@ const Products = () => {
         />
 
         {loading ? (
-          <div className="flex justify-center items-center h-64">
-            Loading products...
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {[...Array(8)].map((_, i) => (
+              <div key={i} className="space-y-4">
+                <Skeleton className="h-48 w-full" />
+                <Skeleton className="h-4 w-2/3" />
+                <Skeleton className="h-4 w-1/2" />
+              </div>
+            ))}
           </div>
         ) : products.length === 0 ? (
           <div className="text-center text-gray-500 py-10">
