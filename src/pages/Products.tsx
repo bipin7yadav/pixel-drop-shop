@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import ProductCard from '@/components/products/ProductCard';
 import ProductFilters from '@/components/products/ProductFilters';
@@ -11,6 +11,7 @@ import { toast } from 'sonner';
 
 const Products = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const queryParams = new URLSearchParams(location.search);
   const categoryFromUrl = queryParams.get('category') || 'all';
 
@@ -30,20 +31,21 @@ const Products = () => {
 
   useEffect(() => {
     fetchCategories();
-    fetchProducts();
   }, []);
 
   useEffect(() => {
+    // Update filters when URL changes
     const categoryFromUrl = queryParams.get('category');
     if (categoryFromUrl) {
       setFilters(prev => ({...prev, category: categoryFromUrl}));
+      setCurrentPage(1); // Reset to first page when category changes
     }
   }, [location.search]);
 
   useEffect(() => {
-    // Only fetch products when sort or page changes
+    // Fetch products when filters, sort, or page changes
     fetchProducts();
-  }, [sortOrder, currentPage]);
+  }, [filters, sortOrder, currentPage]);
 
   const fetchCategories = async () => {
     try {
@@ -163,11 +165,21 @@ const Products = () => {
   };
 
   const handleFilterChange = (newFilters: any) => {
-    // Only update the filters state, don't fetch products yet
     setFilters(prevFilters => ({
       ...prevFilters,
       ...newFilters
     }));
+    
+    // Update URL when category changes
+    if (newFilters.category) {
+      const params = new URLSearchParams(location.search);
+      if (newFilters.category === 'all') {
+        params.delete('category');
+      } else {
+        params.set('category', newFilters.category);
+      }
+      navigate({ search: params.toString() });
+    }
   };
 
   const handleApplyFilters = () => {

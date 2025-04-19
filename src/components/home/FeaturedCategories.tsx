@@ -59,7 +59,7 @@ const FeaturedCategories = () => {
             viewport={{ once: true }}
             transition={{ delay: index * 0.1 }}
           >
-            <Link to={`/categories/${category.slug}`} className="group block">
+            <Link to={`/products?category=${category.id}`} className="group block">
               <div className="relative aspect-[4/3] rounded-xl overflow-hidden">
                 <motion.img
                   src={category.image_url || '/placeholder.svg'}
