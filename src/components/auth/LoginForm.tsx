@@ -1,40 +1,67 @@
 
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { Mail, Lock, Github, Facebook } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 const LoginForm = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     
     try {
-      // Simulated login - would use Supabase auth in real implementation
-      console.log("Logging in with:", { email, password });
+      // Real login with Supabase
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
       
-      // Simulate successful login
-      setTimeout(() => {
-        toast({
-          title: "Logged in successfully",
-          description: "Welcome back to PixelMart!",
-        });
-        setIsLoading(false);
-      }, 1000);
+      if (error) throw error;
       
-    } catch (error) {
-      setIsLoading(false);
+      toast({
+        title: "Logged in successfully",
+        description: "Welcome back to PixelMart!",
+      });
+      
+      // Redirect to products page after successful login
+      navigate("/products");
+      
+    } catch (error: any) {
       toast({
         variant: "destructive",
         title: "Login failed",
-        description: "Please check your credentials and try again.",
+        description: error.message || "Please check your credentials and try again.",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleOAuthLogin = async (provider: 'github' | 'google') => {
+    try {
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo: `${window.location.origin}/products`
+        }
+      });
+      
+      if (error) throw error;
+      
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Login failed",
+        description: error.message || `Failed to login with ${provider}.`,
       });
     }
   };
@@ -103,13 +130,23 @@ const LoginForm = () => {
         </div>
         
         <div className="grid grid-cols-2 gap-4">
-          <Button variant="outline" type="button" className="w-full">
+          <Button 
+            variant="outline" 
+            type="button" 
+            className="w-full" 
+            onClick={() => handleOAuthLogin('github')}
+          >
             <Github className="mr-2 h-4 w-4" />
             GitHub
           </Button>
-          <Button variant="outline" type="button" className="w-full">
+          <Button 
+            variant="outline" 
+            type="button" 
+            className="w-full"
+            onClick={() => handleOAuthLogin('google')}
+          >
             <Facebook className="mr-2 h-4 w-4" />
-            Facebook
+            Google
           </Button>
         </div>
       </form>

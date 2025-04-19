@@ -1,11 +1,12 @@
 
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/components/ui/use-toast";
 import { Mail, Lock, User, Github, Facebook } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 const RegisterForm = () => {
   const [fullName, setFullName] = useState("");
@@ -14,6 +15,7 @@ const RegisterForm = () => {
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,24 +32,55 @@ const RegisterForm = () => {
     setIsLoading(true);
     
     try {
-      // Simulated registration - would use Supabase auth in real implementation
-      console.log("Registering with:", { fullName, email, password });
+      // Sign up with Supabase
+      const { data, error } = await supabase.auth.signUp({ 
+        email,
+        password,
+        options: {
+          data: {
+            full_name: fullName,
+          }
+        }
+      });
       
-      // Simulate successful registration
-      setTimeout(() => {
-        toast({
-          title: "Account created successfully",
-          description: "Welcome to PixelMart!",
-        });
-        setIsLoading(false);
-      }, 1000);
+      if (error) throw error;
       
-    } catch (error) {
+      toast({
+        title: "Account created successfully",
+        description: "Welcome to PixelMart! You can now sign in.",
+      });
+      
+      // Redirect to login page after successful registration
+      navigate("/login");
+      
+    } catch (error: any) {
       setIsLoading(false);
       toast({
         variant: "destructive",
         title: "Registration failed",
-        description: "An error occurred during registration. Please try again.",
+        description: error.message || "An error occurred during registration. Please try again.",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleOAuthSignup = async (provider: 'github' | 'google') => {
+    try {
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo: `${window.location.origin}/products`
+        }
+      });
+      
+      if (error) throw error;
+      
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Signup failed",
+        description: error.message || `Failed to signup with ${provider}.`,
       });
     }
   };
@@ -154,13 +187,23 @@ const RegisterForm = () => {
         </div>
         
         <div className="grid grid-cols-2 gap-4">
-          <Button variant="outline" type="button" className="w-full">
+          <Button 
+            variant="outline" 
+            type="button" 
+            className="w-full"
+            onClick={() => handleOAuthSignup('github')}
+          >
             <Github className="mr-2 h-4 w-4" />
             GitHub
           </Button>
-          <Button variant="outline" type="button" className="w-full">
+          <Button 
+            variant="outline" 
+            type="button" 
+            className="w-full"
+            onClick={() => handleOAuthSignup('google')}
+          >
             <Facebook className="mr-2 h-4 w-4" />
-            Facebook
+            Google
           </Button>
         </div>
       </form>
