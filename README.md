@@ -1,73 +1,80 @@
-# Welcome to your Lovable project
 
-## Project info
+# PixelMart - E-Commerce Platform
 
-**URL**: https://lovable.dev/projects/021bfa12-890d-4d0e-ad0a-fcf68e2cb189
+PixelMart is a modern e-commerce platform built with React, TypeScript, and Supabase.
 
-## How can I edit this code?
+**URL**: https://021bfa12-890d-4d0e-ad0a-fcf68e2cb189.lovableproject.com
 
-There are several ways of editing your application.
+## Features
 
-**Use Lovable**
+- Product catalog with categories and filters
+- User authentication system with role-based access
+- Shopping cart functionality
+- Admin dashboard for product management
+- Seller portal for managing products
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/021bfa12-890d-4d0e-ad0a-fcf68e2cb189) and start prompting.
+## Admin and Seller Access
 
-Changes made via Lovable will be committed automatically to this repo.
+### Default Admin Login
+- **Email**: admin@pixelmart.com
+- **Password**: Admin123!
 
-**Use your preferred IDE**
+As an admin user, you can:
+- Access the admin dashboard
+- Manage all products and categories
+- View and manage all orders
+- Manage user accounts
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+### Default Seller Login
+- **Email**: seller@pixelmart.com
+- **Password**: Seller123!
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+As a seller user, you can:
+- Access the seller dashboard
+- Manage your own products
+- View and manage your orders
 
-Follow these steps:
+### Testing Admin and Seller Access
+
+1. Navigate to the login page (/login)
+2. Enter the admin or seller credentials
+3. Once logged in, you'll be redirected to the dashboard
+4. For admin users, you'll see all management options
+5. For seller users, you'll only see options related to your products
+
+## Project Setup
+
+If you want to work locally using your own IDE, you can clone this repo and push changes.
 
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
+# Step 1: Clone the repository
 git clone <YOUR_GIT_URL>
 
-# Step 2: Navigate to the project directory.
+# Step 2: Navigate to the project directory
 cd <YOUR_PROJECT_NAME>
 
-# Step 3: Install the necessary dependencies.
+# Step 3: Install the necessary dependencies
 npm i
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Step 4: Start the development server
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
-
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
+## Technologies Used
 
 - Vite
 - TypeScript
 - React
 - shadcn-ui
 - Tailwind CSS
+- Supabase (Authentication, Database, Storage)
 
-## How can I deploy this project?
+## Deploying the Project
 
-Simply open [Lovable](https://lovable.dev/projects/021bfa12-890d-4d0e-ad0a-fcf68e2cb189) and click on Share -> Publish.
+To deploy this project, navigate to [Lovable](https://lovable.dev/projects/021bfa12-890d-4d0e-ad0a-fcf68e2cb189) and click on Share -> Publish.
 
-## Can I connect a custom domain to my Lovable project?
+## Custom Domain
 
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+You can connect a custom domain by going to Project > Settings > Domains and clicking Connect Domain.
 
 Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)

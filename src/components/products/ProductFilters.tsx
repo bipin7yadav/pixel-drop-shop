@@ -38,6 +38,11 @@ const ProductFilters: React.FC<ProductFiltersProps> = ({
     return () => clearTimeout(timeoutId);
   }, [localFilters, onFilterChange]);
 
+  useEffect(() => {
+    // Update local filters when currentFilters change from parent
+    setLocalFilters(currentFilters);
+  }, [currentFilters]);
+
   const handleCategoryChange = (value: string) => {
     setLocalFilters(prev => ({
       ...prev,
@@ -95,6 +100,7 @@ const ProductFilters: React.FC<ProductFiltersProps> = ({
           min={0}
           max={1000}
           step={10}
+          value={[localFilters.minPrice, localFilters.maxPrice]}
           onValueChange={handlePriceChange}
         />
       </div>
