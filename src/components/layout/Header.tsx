@@ -1,29 +1,44 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { ShoppingCart, User, Menu, X, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { motion, AnimatePresence } from "framer-motion";
+import { useCart } from "@/contexts/CartContext";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const { itemCount } = useCart();
   
   // These would come from auth context in a real implementation
   const isLoggedIn = false;
-  const cartItemsCount = 0;
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
+  const toggleSearch = () => setIsSearchOpen(!isSearchOpen);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 0);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
 
   return (
-    <header className="bg-white border-b sticky top-0 z-50">
-      <div className="container mx-auto px-4 py-4">
-        <div className="flex items-center justify-between">
+    <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled ? "bg-white shadow-md" : "bg-transparent"}`}>
+      <div className="container mx-auto px-4">
+        <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link to="/" className="text-2xl font-bold text-brand-teal">
-            PixelMart
+          <Link to="/" className="text-xl font-semibold text-brand-teal">
+            PixelDrop
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-6">
+          <nav className="hidden md:flex items-center space-x-8">
             <Link to="/products" className="text-gray-700 hover:text-brand-teal transition-colors">
               All Products
             </Link>
@@ -35,49 +50,39 @@ const Header = () => {
             </Link>
           </nav>
 
-          {/* Search, Cart & Account - Desktop */}
-          <div className="hidden md:flex items-center space-x-4">
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="Search products..."
-                className="pl-10 pr-4 py-2 border rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-brand-teal focus:border-transparent"
-              />
-              <Search className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
-            </div>
-
-            <Link to="/cart" className="relative p-2">
-              <ShoppingCart className="w-6 h-6 text-gray-700" />
-              {cartItemsCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-brand-teal text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                  {cartItemsCount}
-                </span>
-              )}
+          {/* Search and Cart */}
+          <div className="flex items-center space-x-4">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-gray-700 hover:text-brand-teal"
+              onClick={toggleSearch}
+            >
+              <Search className="w-5 h-5" />
+            </Button>
+            <Link to="/cart" className="relative">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-gray-700 hover:text-brand-teal"
+              >
+                <ShoppingCart className="w-5 h-5" />
+                {itemCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-brand-teal text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                    {itemCount}
+                  </span>
+                )}
+              </Button>
             </Link>
-
-            {isLoggedIn ? (
-              <Link to="/account">
-                <Button variant="ghost" size="icon">
-                  <User className="w-6 h-6 text-gray-700" />
-                </Button>
-              </Link>
-            ) : (
-              <Link to="/login">
-                <Button variant="outline" className="border-brand-teal text-brand-teal hover:bg-brand-sage">
-                  Sign In
-                </Button>
-              </Link>
-            )}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="md:hidden text-gray-700"
+              onClick={toggleMenu}
+            >
+              <Menu className="w-5 h-5" />
+            </Button>
           </div>
-
-          {/* Mobile menu button */}
-          <button className="md:hidden flex items-center" onClick={toggleMenu}>
-            {isMenuOpen ? (
-              <X className="w-6 h-6 text-gray-700" />
-            ) : (
-              <Menu className="w-6 h-6 text-gray-700" />
-            )}
-          </button>
         </div>
 
         {/* Mobile Navigation */}
@@ -117,9 +122,9 @@ const Header = () => {
                 <Link to="/cart" className="relative flex items-center">
                   <ShoppingCart className="w-5 h-5 mr-2 text-gray-700" />
                   <span>Cart</span>
-                  {cartItemsCount > 0 && (
+                  {itemCount > 0 && (
                     <span className="ml-2 bg-brand-teal text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                      {cartItemsCount}
+                      {itemCount}
                     </span>
                   )}
                 </Link>
