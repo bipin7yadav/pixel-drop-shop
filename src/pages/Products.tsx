@@ -10,7 +10,7 @@ const Products = () => {
   const [products, setProducts] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
   const [filters, setFilters] = useState({
-    category: '',
+    category: 'all',
     minPrice: 0,
     maxPrice: 1000,
     search: ''
@@ -52,7 +52,7 @@ const Products = () => {
         )
       `);
 
-    if (filters.category) {
+    if (filters.category && filters.category !== 'all') {
       query = query.eq('category_id', filters.category);
     }
 
