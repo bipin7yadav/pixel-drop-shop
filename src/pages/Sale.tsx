@@ -174,7 +174,7 @@ const Sale = () => {
   return (
     <Layout>
       <div className="w-full min-h-screen bg-background">
-        <div className="container mx-auto px-4 py-8">
+        <div className="container mx-auto px-4 py-8 mt-16">
           <div className="text-center mb-12">
             <h1 className="text-3xl font-bold mb-4">Special Offers</h1>
             <p className="text-gray-600 max-w-2xl mx-auto">
@@ -219,9 +219,8 @@ const Sale = () => {
                       id: product.id,
                       name: product.name,
                       price: product.price,
-                      image: product.image_url || "/placeholder.svg",
-                      slug: product.id,
-                      averageRating: 4.5
+                      image_url: product.image_url,
+                      average_rating: product.average_rating
                     }}
                   />
                 ))}

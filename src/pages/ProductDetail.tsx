@@ -1,73 +1,81 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 import Layout from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
 import { Star, Truck, ShieldCheck, RotateCcw, Minus, Plus, Heart, ShoppingCart } from "lucide-react";
+import { useCart } from "@/contexts/CartContext";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Database } from "@/integrations/supabase/types";
 
-// Mock product data - would come from API in real implementation
-const product = {
-  id: 1,
-  name: "Wireless Bluetooth Earbuds",
-  price: 59.99,
-  originalPrice: 79.99,
-  description: "High-quality wireless earbuds with noise cancellation technology, long battery life, and crystal-clear sound quality. Perfect for workouts, commuting, or everyday use.",
-  images: ["/placeholder.svg", "/placeholder.svg", "/placeholder.svg"],
-  averageRating: 4.5,
-  reviewCount: 128,
-  stock: 15,
-  features: [
-    "Active noise cancellation",
-    "Up to 8 hours of battery life",
-    "Water and sweat resistant (IPX4)",
-    "Touch controls for music and calls",
-    "Compact charging case included",
-    "Bluetooth 5.0 connectivity"
-  ],
-  variants: {
-    colors: ["Black", "White", "Blue"],
-    sizes: []
-  },
-  specifications: {
-    "Bluetooth Version": "5.0",
-    "Battery Life": "Up to 8 hours (earbuds) + 24 hours (case)",
-    "Charging Time": "1.5 hours",
-    "Water Resistance": "IPX4",
-    "Microphones": "Dual microphone with noise reduction",
-    "Weight": "5g per earbud, 45g charging case"
-  },
-  brand: "SoundTech",
-  sku: "ST-EAR-001"
-};
+type Product = Database['public']['Tables']['products']['Row'];
 
 const ProductDetail = () => {
   const { slug } = useParams<{ slug: string }>();
-  const [selectedColor, setSelectedColor] = useState(product.variants.colors[0]);
-  const [quantity, setQuantity] = useState(1);
+  const [product, setProduct] = useState<Product | null>(null);
+  const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState(0);
+  const [quantity, setQuantity] = useState(1);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const { toast } = useToast();
-  
-  // In a real app, we'd fetch the product by slug
-  console.log(`Fetching product with slug: ${slug}`);
+  const { addItem } = useCart();
+
+  useEffect(() => {
+    fetchProduct();
+  }, [slug]);
+
+  const fetchProduct = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('products')
+        .select(`
+          *,
+          categories (
+            id,
+            name,
+            slug
+          )
+        `)
+        .eq('id', slug)
+        .single();
+
+      if (error) throw error;
+      setProduct(data);
+    } catch (error) {
+      console.error('Error fetching product:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to load product details. Please try again later.",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleAddToCart = () => {
-    setIsAddingToCart(true);
+    if (!product) return;
     
-    // Simulate adding to cart
-    setTimeout(() => {
-      toast({
-        title: "Added to cart!",
-        description: `${quantity} x ${product.name} (${selectedColor}) added to your cart.`,
-      });
-      setIsAddingToCart(false);
-    }, 1000);
+    setIsAddingToCart(true);
+    addItem({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      image: product.image_url || "/placeholder.svg"
+    });
+    
+    toast({
+      title: "Added to cart!",
+      description: `${quantity} x ${product.name} added to your cart.`,
+    });
+    setIsAddingToCart(false);
   };
   
   const increaseQuantity = () => {
-    if (quantity < product.stock) {
+    if (product?.stock_quantity && quantity < product.stock_quantity) {
       setQuantity(quantity + 1);
     }
   };
@@ -78,36 +86,76 @@ const ProductDetail = () => {
     }
   };
 
+  if (loading) {
+    return (
+      <Layout>
+        <div className="container mx-auto py-8 px-4">
+          <div className="grid md:grid-cols-2 gap-8">
+            <div className="space-y-4">
+              <Skeleton className="w-full aspect-square" />
+              <div className="flex space-x-4">
+                {[...Array(3)].map((_, i) => (
+                  <Skeleton key={i} className="w-20 h-20" />
+                ))}
+              </div>
+            </div>
+            <div className="space-y-6">
+              <Skeleton className="h-8 w-3/4" />
+              <Skeleton className="h-4 w-1/2" />
+              <Skeleton className="h-6 w-1/4" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-2/3" />
+              <Skeleton className="h-10 w-1/2" />
+            </div>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+
+  if (!product) {
+    return (
+      <Layout>
+        <div className="container mx-auto py-8 px-4 text-center">
+          <h1 className="text-2xl font-bold mb-4">Product Not Found</h1>
+          <p className="text-gray-600">The product you're looking for doesn't exist or has been removed.</p>
+        </div>
+      </Layout>
+    );
+  }
+
   return (
     <Layout>
-      <div className="container mx-auto py-8 px-4">
+      <div className="container mx-auto py-8 px-4 mt-16">
         <div className="grid md:grid-cols-2 gap-8">
           {/* Product Images */}
           <div className="space-y-4">
             <div className="border rounded-lg overflow-hidden aspect-square">
               <img
-                src={product.images[selectedImage]}
+                src={product.image_url || "/placeholder.svg"}
                 alt={product.name}
                 className="w-full h-full object-cover"
               />
             </div>
-            <div className="flex space-x-4">
-              {product.images.map((image, index) => (
-                <div
-                  key={index}
-                  className={`border rounded-md overflow-hidden cursor-pointer w-20 h-20 ${
-                    selectedImage === index ? "border-brand-teal" : ""
-                  }`}
-                  onClick={() => setSelectedImage(index)}
-                >
-                  <img
-                    src={image}
-                    alt={`${product.name} - Image ${index + 1}`}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              ))}
-            </div>
+            {product.gallery && product.gallery.length > 0 && (
+              <div className="flex space-x-4">
+                {product.gallery.map((image, index) => (
+                  <div
+                    key={index}
+                    className={`border rounded-md overflow-hidden cursor-pointer w-20 h-20 ${
+                      selectedImage === index ? "border-brand-teal" : ""
+                    }`}
+                    onClick={() => setSelectedImage(index)}
+                  >
+                    <img
+                      src={image}
+                      alt={`${product.name} - Image ${index + 1}`}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
           
           {/* Product Info */}
@@ -124,14 +172,14 @@ const ProductDetail = () => {
                         key={i}
                         size={18}
                         className={`${
-                          i < Math.floor(product.averageRating)
+                          i < Math.floor(product.average_rating || 0)
                             ? "text-yellow-400 fill-yellow-400"
                             : "text-gray-300"
                         }`}
                       />
                     ))}
                   <span className="ml-2 text-sm text-gray-600">
-                    {product.averageRating} ({product.reviewCount} reviews)
+                    {product.average_rating?.toFixed(1)} ({product.review_count || 0} reviews)
                   </span>
                 </div>
               </div>
@@ -140,48 +188,20 @@ const ProductDetail = () => {
                 <span className="text-2xl font-bold text-brand-teal">
                   ${product.price.toFixed(2)}
                 </span>
-                {product.originalPrice && (
+                {product.original_price && (
                   <span className="text-gray-500 line-through">
-                    ${product.originalPrice.toFixed(2)}
+                    ${product.original_price.toFixed(2)}
                   </span>
                 )}
               </div>
               
               <div className="mt-2 text-sm text-green-600 flex items-center">
-                <span className="mr-1">●</span> In Stock ({product.stock} available)
+                <span className="mr-1">●</span> In Stock ({product.stock_quantity} available)
               </div>
             </div>
             
-            {/* Short description */}
+            {/* Description */}
             <p className="text-gray-600">{product.description}</p>
-            
-            {/* Color selection */}
-            {product.variants.colors.length > 0 && (
-              <div>
-                <h3 className="font-medium mb-2">Color: {selectedColor}</h3>
-                <div className="flex space-x-3">
-                  {product.variants.colors.map((color) => (
-                    <button
-                      key={color}
-                      className={`w-10 h-10 rounded-full border-2 ${
-                        selectedColor === color
-                          ? "border-brand-teal"
-                          : "border-transparent"
-                      }`}
-                      style={{
-                        backgroundColor:
-                          color.toLowerCase() === "black"
-                            ? "#000"
-                            : color.toLowerCase() === "white"
-                            ? "#fff"
-                            : color.toLowerCase(),
-                      }}
-                      onClick={() => setSelectedColor(color)}
-                    />
-                  ))}
-                </div>
-              </div>
-            )}
             
             {/* Quantity */}
             <div>
@@ -202,7 +222,7 @@ const ProductDetail = () => {
                   variant="outline"
                   size="icon"
                   onClick={increaseQuantity}
-                  disabled={quantity >= product.stock}
+                  disabled={product.stock_quantity ? quantity >= product.stock_quantity : false}
                 >
                   <Plus size={16} />
                 </Button>
@@ -258,7 +278,7 @@ const ProductDetail = () => {
             <TabsContent value="features" className="space-y-4">
               <h3 className="text-xl font-medium">Key Features</h3>
               <ul className="list-disc pl-5 space-y-2">
-                {product.features.map((feature, index) => (
+                {product.features?.map((feature, index) => (
                   <li key={index} className="text-gray-700">{feature}</li>
                 ))}
               </ul>
@@ -267,7 +287,7 @@ const ProductDetail = () => {
             <TabsContent value="specifications">
               <h3 className="text-xl font-medium mb-4">Technical Specifications</h3>
               <div className="grid sm:grid-cols-2 gap-4">
-                {Object.entries(product.specifications).map(([key, value]) => (
+                {product.specifications && Object.entries(product.specifications).map(([key, value]) => (
                   <div key={key} className="border-b pb-2">
                     <span className="text-gray-600 font-medium">{key}:</span>{" "}
                     <span className="text-gray-800">{value}</span>
@@ -283,7 +303,7 @@ const ProductDetail = () => {
                   <div>
                     <div className="flex items-center">
                       <span className="text-5xl font-bold text-gray-900">
-                        {product.averageRating}
+                        {product.average_rating?.toFixed(1)}
                       </span>
                       <span className="text-lg text-gray-600 ml-2">/ 5</span>
                     </div>
@@ -295,7 +315,7 @@ const ProductDetail = () => {
                             key={i}
                             size={20}
                             className={`${
-                              i < Math.floor(product.averageRating)
+                              i < Math.floor(product.average_rating || 0)
                                 ? "text-yellow-400 fill-yellow-400"
                                 : "text-gray-300"
                             }`}
@@ -303,7 +323,7 @@ const ProductDetail = () => {
                         ))}
                     </div>
                     <p className="text-gray-500 mt-1">
-                      Based on {product.reviewCount} reviews
+                      Based on {product.review_count || 0} reviews
                     </p>
                   </div>
                   

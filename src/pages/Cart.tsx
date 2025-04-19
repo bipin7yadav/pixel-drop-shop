@@ -11,8 +11,8 @@ const Cart = () => {
 
   return (
     <Layout>
-      <div className="container mx-auto py-8 px-4">
-        <h1 className="text-3xl font-bold mb-8">Your Shopping Cart</h1>
+      <div className="container mx-auto px-4 py-8 mt-16">
+        <h1 className="text-3xl font-bold mb-6">Shopping Cart</h1>
         
         {items.length > 0 ? (
           <div className="grid md:grid-cols-3 gap-8">

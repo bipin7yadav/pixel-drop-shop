@@ -199,7 +199,7 @@ const Products = () => {
 
   return (
     <Layout>
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-8 mt-16">
         <h1 className="text-3xl font-bold mb-6">Our Products</h1>
         
         <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-6">
@@ -239,9 +239,8 @@ const Products = () => {
                     id: product.id,
                     name: product.name,
                     price: product.price,
-                    image: product.image_url || "/placeholder.svg",
-                    slug: product.id,
-                    averageRating: 4.5
+                    image_url: product.image_url,
+                    average_rating: product.average_rating
                   }}
                 />
               ))}
