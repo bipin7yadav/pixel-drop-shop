@@ -6,7 +6,7 @@ import ProductFilters from '@/components/products/ProductFilters';
 import ProductSort from '@/components/products/ProductSort';
 import Layout from '@/components/layout/Layout';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
+import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious, PaginationEllipsis } from '@/components/ui/pagination';
 import { toast } from 'sonner';
 
 const Products = () => {
@@ -245,16 +245,64 @@ const Products = () => {
                     />
                   </PaginationItem>
                   
-                  {[...Array(totalPages)].map((_, i) => (
-                    <PaginationItem key={i}>
+                  {/* First page */}
+                  <PaginationItem>
+                    <PaginationLink 
+                      isActive={currentPage === 1}
+                      onClick={() => handlePageChange(1)}
+                    >
+                      1
+                    </PaginationLink>
+                  </PaginationItem>
+
+                  {/* Show ellipsis if current page is far from start */}
+                  {currentPage > 3 && (
+                    <PaginationItem>
+                      <PaginationEllipsis />
+                    </PaginationItem>
+                  )}
+
+                  {/* Middle pages */}
+                  {[...Array(Math.min(5, totalPages - 2))].map((_, i) => {
+                    const page = currentPage <= 3
+                      ? i + 2
+                      : currentPage >= totalPages - 2
+                      ? totalPages - 4 + i
+                      : currentPage - 2 + i;
+                    
+                    if (page > 1 && page < totalPages) {
+                      return (
+                        <PaginationItem key={page}>
+                          <PaginationLink 
+                            isActive={currentPage === page}
+                            onClick={() => handlePageChange(page)}
+                          >
+                            {page}
+                          </PaginationLink>
+                        </PaginationItem>
+                      );
+                    }
+                    return null;
+                  })}
+
+                  {/* Show ellipsis if current page is far from end */}
+                  {currentPage < totalPages - 2 && (
+                    <PaginationItem>
+                      <PaginationEllipsis />
+                    </PaginationItem>
+                  )}
+
+                  {/* Last page */}
+                  {totalPages > 1 && (
+                    <PaginationItem>
                       <PaginationLink 
-                        isActive={currentPage === i + 1}
-                        onClick={() => handlePageChange(i + 1)}
+                        isActive={currentPage === totalPages}
+                        onClick={() => handlePageChange(totalPages)}
                       >
-                        {i + 1}
+                        {totalPages}
                       </PaginationLink>
                     </PaginationItem>
-                  ))}
+                  )}
                   
                   <PaginationItem>
                     <PaginationNext 

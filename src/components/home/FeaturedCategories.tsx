@@ -1,77 +1,90 @@
-
-import { Link } from "react-router-dom";
-
-const categories = [
-  {
-    id: 1,
-    name: "Electronics",
-    image: "/placeholder.svg",
-    slug: "electronics",
-  },
-  {
-    id: 2,
-    name: "Clothing",
-    image: "/placeholder.svg",
-    slug: "clothing",
-  },
-  {
-    id: 3,
-    name: "Home & Kitchen",
-    image: "/placeholder.svg",
-    slug: "home-kitchen",
-  },
-  {
-    id: 4,
-    name: "Beauty",
-    image: "/placeholder.svg",
-    slug: "beauty",
-  },
-];
+import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui/button';
+import { ArrowRight } from 'lucide-react';
 
 const FeaturedCategories = () => {
+  const [categories, setCategories] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('categories')
+          .select('*')
+          .limit(6);
+
+        if (error) throw error;
+        setCategories(data || []);
+      } catch (error) {
+        console.error('Error fetching categories:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCategories();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {[...Array(6)].map((_, i) => (
+          <motion.div
+            key={i}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.1 }}
+          >
+            <Skeleton className="aspect-[4/3] rounded-xl" />
+            <Skeleton className="h-6 w-1/2 mt-4" />
+          </motion.div>
+        ))}
+      </div>
+    );
+  }
+
   return (
-    <section className="py-12 md:py-16">
-      <div className="container mx-auto px-4">
-        <h2 className="text-2xl md:text-3xl font-bold text-center mb-2">
-          Shop by Category
-        </h2>
-        <p className="text-gray-600 text-center mb-10">
-          Explore our wide range of products across popular categories
-        </p>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-          {categories.map((category) => (
-            <Link 
-              to={`/categories/${category.slug}`} 
-              key={category.id}
-              className="group relative rounded-lg overflow-hidden"
-            >
-              <div className="aspect-square">
-                <img 
-                  src={category.image} 
+    <div className="space-y-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {categories.map((category, index) => (
+          <motion.div
+            key={category.id}
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: index * 0.1 }}
+          >
+            <Link to={`/categories/${category.slug}`} className="group block">
+              <div className="relative aspect-[4/3] rounded-xl overflow-hidden">
+                <motion.img
+                  src={category.image_url || '/placeholder.svg'}
                   alt={category.name}
-                  className="w-full h-full object-cover transition-transform group-hover:scale-105 duration-300"
+                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                 />
-              </div>
-              <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent">
-                <div className="absolute bottom-0 left-0 right-0 p-4">
-                  <h3 className="text-white font-medium text-lg">{category.name}</h3>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                <div className="absolute bottom-0 left-0 right-0 p-6">
+                  <h3 className="text-xl font-light text-white mb-2">{category.name}</h3>
+                  <p className="text-white/80 text-sm">Explore Collection</p>
                 </div>
               </div>
             </Link>
-          ))}
-        </div>
-        <div className="text-center mt-8">
-          <Link to="/categories">
-            <button className="text-brand-teal hover:text-opacity-80 font-medium inline-flex items-center">
-              View All Categories
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd" />
-              </svg>
-            </button>
-          </Link>
-        </div>
+          </motion.div>
+        ))}
       </div>
-    </section>
+      <div className="text-center">
+        <Link to="/categories">
+          <Button variant="outline" className="group">
+            View All Categories
+            <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+          </Button>
+        </Link>
+      </div>
+    </div>
   );
 };
 
