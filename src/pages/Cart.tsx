@@ -1,79 +1,29 @@
-
-import { useState, useEffect } from "react";
 import Layout from "@/components/layout/Layout";
 import CartItem from "@/components/cart/CartItem";
 import CartSummary from "@/components/cart/CartSummary";
 import { Button } from "@/components/ui/button";
 import { ShoppingBag, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
-
-// Mock cart data - would come from context or state in real implementation
-const initialCartItems = [
-  {
-    id: 1,
-    name: "Wireless Bluetooth Earbuds",
-    price: 59.99,
-    image: "/placeholder.svg",
-    quantity: 1,
-  },
-  {
-    id: 2,
-    name: "Minimalist Analog Watch",
-    price: 79.99,
-    image: "/placeholder.svg",
-    quantity: 1,
-    variant: {
-      color: "Black",
-    },
-  },
-];
+import { useCart } from "@/contexts/CartContext";
 
 const Cart = () => {
-  const [cartItems, setCartItems] = useState(initialCartItems);
-  const [isUpdating, setIsUpdating] = useState(false);
-  
-  const subtotal = cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
-  const itemCount = cartItems.reduce((count, item) => count + item.quantity, 0);
-  
-  const handleUpdateQuantity = (id: number, quantity: number) => {
-    setIsUpdating(true);
-    
-    // Simulate API call delay
-    setTimeout(() => {
-      setCartItems(
-        cartItems.map((item) =>
-          item.id === id ? { ...item, quantity } : item
-        )
-      );
-      setIsUpdating(false);
-    }, 300);
-  };
-  
-  const handleRemoveItem = (id: number) => {
-    setIsUpdating(true);
-    
-    // Simulate API call delay
-    setTimeout(() => {
-      setCartItems(cartItems.filter((item) => item.id !== id));
-      setIsUpdating(false);
-    }, 300);
-  };
+  const { items, updateQuantity, removeItem, itemCount, subtotal } = useCart();
 
   return (
     <Layout>
       <div className="container mx-auto py-8 px-4">
         <h1 className="text-3xl font-bold mb-8">Your Shopping Cart</h1>
         
-        {cartItems.length > 0 ? (
+        {items.length > 0 ? (
           <div className="grid md:grid-cols-3 gap-8">
             {/* Cart Items */}
             <div className="md:col-span-2">
-              {cartItems.map((item) => (
+              {items.map((item) => (
                 <CartItem
                   key={item.id}
                   item={item}
-                  onUpdateQuantity={handleUpdateQuantity}
-                  onRemoveItem={handleRemoveItem}
+                  onUpdateQuantity={updateQuantity}
+                  onRemoveItem={removeItem}
                 />
               ))}
               
@@ -93,7 +43,6 @@ const Cart = () => {
               <CartSummary
                 subtotal={subtotal}
                 itemCount={itemCount}
-                isLoading={isUpdating}
               />
             </div>
           </div>

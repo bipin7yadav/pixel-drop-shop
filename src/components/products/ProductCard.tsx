@@ -1,7 +1,7 @@
-
 import { Link } from "react-router-dom";
 import { ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useCart } from "@/contexts/CartContext";
 
 interface ProductCardProps {
   product: {
@@ -16,12 +16,17 @@ interface ProductCardProps {
 
 const ProductCard = ({ product }: ProductCardProps) => {
   const { id, name, price, image, slug, averageRating } = product;
+  const { addItem } = useCart();
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    // This would be implemented with a cart context in a real application
-    console.log("Added to cart:", id);
+    addItem({
+      id,
+      name,
+      price,
+      image
+    });
   };
 
   return (
