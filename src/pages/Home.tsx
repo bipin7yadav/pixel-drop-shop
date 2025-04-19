@@ -101,19 +101,19 @@ const Home = () => {
         </motion.div>
       </section>
 
-      {/* Featured Categories */}
-      <section className="py-20 bg-background">
-        <div className="container mx-auto px-4">
+      {/* Featured Categories Section */}
+      <section className="py-24 bg-gray-50">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
+            transition={{ duration: 0.5 }}
             className="text-center mb-16"
           >
-            <h2 className="text-3xl md:text-4xl font-light mb-4">Shop by Category</h2>
-            <p className="text-secondary max-w-2xl mx-auto">
-              Browse our carefully curated categories to find exactly what you're looking for.
+            <h2 className="text-4xl font-light mb-4">Shop by Category</h2>
+            <p className="text-gray-600 max-w-2xl mx-auto">
+              Discover our curated collections of premium products, each designed with attention to detail and quality craftsmanship.
             </p>
           </motion.div>
           <FeaturedCategories />
